@@ -1,0 +1,13 @@
+[
+  {
+    "repo": "amplifier-bundle-genemigration",
+    "commit": "a20f50716d4bd07053a04b84fe5c50d6eee547ef",
+    "paths": [
+      "PRINCIPLES.md",
+      "context/gm-runbook.md",
+      "context/story-template.md"
+    ],
+    "license": "MIT License",
+    "role": "Primary history and engine retained; methods consolidated behind the canonical portable entry."
+  }
+]

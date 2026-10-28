@@ -4,3 +4,9 @@ __pycache__/
 *.pyc
 .venv/
 .DS_Store
+
+# Capability build and local verification
+_site/
+.venv-capability/
+.capability-check/
+__pycache__/

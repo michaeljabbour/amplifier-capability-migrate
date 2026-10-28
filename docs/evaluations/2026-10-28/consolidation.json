@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-28",
+  "status": "local conformance and native software checks",
+  "capability": "migrate",
+  "primary_source_commit": "a20f50716d4bd07053a04b84fe5c50d6eee547ef",
+  "sources": [
+    {
+      "repo": "amplifier-bundle-genemigration",
+      "commit": "a20f50716d4bd07053a04b84fe5c50d6eee547ef",
+      "paths": [
+        "PRINCIPLES.md",
+        "context/gm-runbook.md",
+        "context/story-template.md"
+      ],
+      "license": "MIT License",
+      "role": "Primary history and engine retained; methods consolidated behind the canonical portable entry."
+    }
+  ],
+  "checks": [
+    {
+      "name": "Ledger ratchet and sequence detector",
+      "command": "python3 evals/hillclimb.py --self-test; python3 evals/hillclimb.py --fixture",
+      "status": "passed",
+      "evidence": "Builder/verifier state regressions rejected and synthetic fixture curve read. These are fixture mechanics, not an app migration or behavioral parity measurement.",
+      "expected": "The stated scope passes; no broader result inferred."
+    },
+    {
+      "name": "Executable graph syntax",
+      "command": "dot -Tsvg pipelines/inventory.dot -o /dev/null; dot -Tsvg pipelines/migrate.dot -o /dev/null; dot -Tsvg pipelines/verify.dot -o /dev/null",
+      "status": "passed",
+      "evidence": "All three retained graphs parse. No graph/orchestration changes or paid pipeline execution.",
+      "expected": "The stated scope passes; no broader result inferred."
+    },
+    {
+      "name": "Portable packaging and install",
+      "command": "python3 scripts/capability.py build; python3 scripts/capability.py check; python3 scripts/capability.py doctor; python3 scripts/capability.py install --dest <temporary-parent> (twice)",
+      "status": "passed",
+      "expected": "Byte-identical canonical ZIP and isolated idempotent install.",
+      "evidence": "All operations passed. No runtime activation or effectiveness measured."
+    },
+    {
+      "name": "Skill discovery metadata",
+      "command": "<yaml-enabled-python> /path/to/skill-creator/scripts/quick_validate.py skills/migrate",
+      "status": "passed",
+      "expected": "Valid required frontmatter, naming, and complete scaffold.",
+      "evidence": "Skill is valid. This is a structural check, not a behavioral benchmark."
+    }
+  ],
+  "limitations": [
+    "No new paid live inference, production activation, publication, or outside-user acceptance.",
+    "Fictional examples are authored illustrations, not observed outcomes.",
+    "Retained historical evaluation assets keep their original scope; renamed portable-method effectiveness is unmeasured."
+  ],
+  "changes": "Observed behavior inventory and storywise idiomatic rebuild with independent verification; engine preserved."
+}
