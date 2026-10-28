@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Clearer public introduction
+
+- Add a capability-specific benefit, worked artifact preview and first-use prompt.
+- Add complete public clone/install steps and separate portable installation from optional execution.
+- Preserve the canonical method, native mechanisms, dated results and evidence limits.
+
 ## 2026-10-28 — local capability consolidation
 
 - Added one portable Migrate entry with mode-specific original references and a license.

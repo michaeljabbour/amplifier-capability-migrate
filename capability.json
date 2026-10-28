@@ -96,6 +96,58 @@
     "docs/NATIVE-README.md",
     "docs/evaluations/2026-10-28/consolidation.json"
   ],
-  "evidence_summary": "This local candidate preserves the original source and evaluation assets. Packaging and native software checks are recorded separately from comparative usefulness. No outside-user outcome or renamed-method effectiveness claim is established.",
-  "publication_status": "Installation and evidence scopes are documented below."
+  "evidence_summary": "Retained graph syntax, ledger ratchet and sequence fixtures pass, and the portable install is checked. They validate orchestration mechanics; this release does not claim a newly completed app migration or production cutover.",
+  "publication_status": "Installation and evidence scopes are documented below.",
+  "marketing": {
+    "headline": "Change the language. Preserve the experience.",
+    "lead": "A whole-application migration skill. Observe how the source behaves, turn it into sequenced stories, and rebuild one complete slice at a time with data, failure and recovery checks.",
+    "benefits": [
+      {
+        "title": "Capture the app people use",
+        "body": "Inventory commands, screens, hidden state, errors and persistence instead of translating files line by line."
+      },
+      {
+        "title": "Rebuild in the target’s idioms",
+        "body": "Use source-derived acceptance criteria while respecting the target language and host architecture."
+      },
+      {
+        "title": "See what is actually complete",
+        "body": "Keep implemented, independently verified, blocked and cut over as separate states."
+      }
+    ],
+    "walkthrough": [
+      {
+        "title": "Inventory the source",
+        "detail": "Keep it read-only and describe observed capabilities as dependency-ordered stories with testable criteria."
+      },
+      {
+        "title": "Rebuild a vertical slice",
+        "detail": "Write target checks and a real-surface probe first; include data handling and recovery."
+      },
+      {
+        "title": "Verify and plan cutover",
+        "detail": "Challenge behavior against the source, preserve failures and record migration and rollback status."
+      }
+    ],
+    "use_when": [
+      "A whole app must move to a different language or runtime.",
+      "A rewrite needs source-based acceptance rather than visual resemblance.",
+      "Data compatibility and failure recovery must survive the move."
+    ],
+    "not_for": [
+      "A guarantee of parity from a green ledger or unit test alone.",
+      "An implicit data migration or permission to cut over a production system."
+    ],
+    "quickstart_prompt": "Use Migrate to inventory this fictional terminal editor for a Rust rebuild. Keep the Python source read-only. Start with open, edit, save and failed-save recovery; write dependency-ordered story cards and acceptance probes before implementation.",
+    "output_preview": "Fictional story: recover from failed save\nGiven: edited buffer and unwritable destination\nWhen: save fails\nThen: buffer remains; reason is visible; retry is possible\nDepends on: editor state and file boundary\nEvidence: source observation + target terminal probe\nState: inventoried; target implementation pending",
+    "proof_summary": "Retained graph syntax, ledger ratchet and sequence fixtures pass, and the portable install is checked. They validate orchestration mechanics; this release does not claim a newly completed app migration or production cutover.",
+    "next_step": "Bring the read-only source, target language and the surfaces that must survive.",
+    "example_note": "Fictional worked example. It illustrates the intended output; it is not a measured result or a real customer story.",
+    "install_notes": [
+      "Requires Git and Python 3.11+ for the repository installer. The portable method itself can be read by a compatible agent without a service or provider account.",
+      "The destination is a skills-parent folder. Use the discovery path supported by your agent; ~/.agents/skills is an example, not a universal host setting.",
+      "Keep the complete installed folder, references and license together. Identical reinstall is safe; conflicts are refused. A deliberate --replace keeps a dated backup."
+    ]
+  },
+  "repository_url": "https://github.com/michaeljabbour/amplifier-skill-migrate"
 }
