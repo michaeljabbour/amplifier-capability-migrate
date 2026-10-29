@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-29 — Guide consistency
+
+- Correct the evaluation guide to distinguish the implemented separate verifier, its caller-controlled launch and the limits of fixture and historical run evidence.
+- Preserve the canonical method, native implementation and film assets.
+
+
 ## 2026-10-28 — Clearer public introduction
 
 - Add a capability-specific benefit, worked artifact preview and first-use prompt.
