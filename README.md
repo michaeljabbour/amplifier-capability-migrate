@@ -2,6 +2,8 @@
 
 Change the language. Preserve the experience.
 
+Watch the [72-second film](https://michaeljabbour.github.io/amplifier-skill-migrate/#film): an app copied line by line that loses a page of edits, and how the skill moves the behavior instead. The example in it is fictional.
+
 A whole-application migration skill. Observe how the source behaves, turn it into sequenced stories, and rebuild one complete slice at a time with data, failure and recovery checks.
 
 [Explore the site](https://michaeljabbour.github.io/amplifier-skill-migrate/) · [Read the method](skills/migrate/SKILL.md) · [Install guide](docs/INSTALL.md)

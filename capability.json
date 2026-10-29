@@ -149,5 +149,12 @@
       "Keep the complete installed folder, references and license together. Identical reinstall is safe; conflicts are refused. A deliberate --replace keeps a dated backup."
     ]
   },
-  "repository_url": "https://github.com/michaeljabbour/amplifier-skill-migrate"
+  "repository_url": "https://github.com/michaeljabbour/amplifier-skill-migrate",
+  "film": {
+    "file": "migrate-film",
+    "seconds": 72,
+    "heading": "Move the behavior, not the lines.",
+    "blurb": "In 72 seconds, Wendell the hermit crab, your app, gets copied line by line into a new shell: tests pass, then a save fails and a page of edits vanishes. Migrate starts from the app people use, every command, error and save, including how it fails. Each behavior becomes a story card with a real terminal check, built in the new language’s own style and checked by a verifier blind to the builder’s tests. Captions are on the player; a transcript is below.",
+    "note": "The app and its failure are a fictional example. This release proves the bookkeeping, not a finished migration. The film shows how the skill behaves; it does not report results."
+  }
 }

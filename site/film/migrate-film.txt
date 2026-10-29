@@ -1,0 +1,10 @@
+Wendell, a hermit crab, is your app. He’s outgrown his shell.
+So you copy him across, line by line.
+Tests pass. Then a save fails, and a page of edits vanishes.
+Migrate starts with the app people use: every command, error and save, including how it fails.
+Each behavior becomes a story card, foundations first.
+Each card gets a real terminal check first, then a build in the new language’s own style.
+A verifier checks it against the old app, blind to the builder’s tests. A miss reopens the card.
+This release proves the bookkeeping, not a finished migration. Data and cutover stay your call.
+On screen: Move the behavior, not the lines.
+Migrate. Change the language without losing the application.

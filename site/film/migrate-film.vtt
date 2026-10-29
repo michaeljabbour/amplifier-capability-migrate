@@ -1,0 +1,43 @@
+WEBVTT
+
+00:00:00.300 --> 00:00:03.210
+Wendell, a hermit crab, is your app.
+
+00:00:03.420 --> 00:00:05.050
+He’s outgrown his shell.
+
+00:00:05.910 --> 00:00:08.800
+So you copy him across, line by line.
+
+00:00:10.160 --> 00:00:10.970
+Tests pass.
+
+00:00:11.360 --> 00:00:16.000
+Then a save fails, and a page of edits vanishes.
+
+00:00:20.900 --> 00:00:27.830
+Migrate starts with the app people use: every command, error and save, including how it fails.
+
+00:00:28.770 --> 00:00:32.560
+Each behavior becomes a story card, foundations first.
+
+00:00:36.160 --> 00:00:42.150
+Each card gets a real terminal check first, then a build in the new language’s own style.
+
+00:00:43.000 --> 00:00:47.330
+A verifier checks it against the old app, blind to the builder’s tests.
+
+00:00:47.760 --> 00:00:49.670
+A miss reopens the card.
+
+00:00:49.940 --> 00:00:53.770
+This release proves the bookkeeping, not a finished migration.
+
+00:00:54.280 --> 00:00:56.840
+Data and cutover stay your call.
+
+00:01:05.840 --> 00:01:06.370
+Migrate.
+
+00:01:06.660 --> 00:01:09.540
+Change the language without losing the application.
