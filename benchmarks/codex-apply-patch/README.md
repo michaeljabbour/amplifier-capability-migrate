@@ -22,6 +22,23 @@ Candidate ports must expose a binary that: reads the full patch envelope
 not graded. The same contract wraps the real implementation for calibration
 (`calibration/` — a thin shim over `codex_apply_patch::apply_patch`).
 
+## Execution boundary
+
+The caller-selected `--bin` is executable code with the grader user's normal OS
+permissions. Use a trusted candidate, or run the entire grader in an external OS
+sandbox before selecting an untrusted program. The minimal child environment and
+case-local HOME/tmp prevent accidental host credential/config inheritance; they
+do not prevent absolute filesystem access, network access or child processes.
+No claim that a candidate is sandboxed follows from its temporary working folder.
+
+Fixture seed and expected paths must be relative POSIX names without traversal or
+Windows drive syntax. The grader validates them before execution, seeds through
+no-follow directory descriptors, and never follows snapshot symlinks/hardlinks or
+reads special files. Unsafe/unreadable entries fail a checked tree. These guards
+require supported Unix descriptor operations (verified locally on macOS arm64);
+unsupported hosts fail closed. Frozen case content and scoring expectations are
+unchanged.
+
 ## Grading
 
 `cases/cases.json` — 21 black-box cases harvested from the answer key's own test

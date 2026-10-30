@@ -168,9 +168,15 @@ def render_film(data):
     have = lambda suffix: (folder / (stem + suffix)).exists()
     base = "film/" + stem
     poster = next((base + s for s in ("-poster.jpg", "-poster.png") if have(s)), "")
-    sources = ('<source src="' + base + '.webm" type="video/webm">' if have(".webm") else "") + '<source src="' + base + '.mp4" type="video/mp4">'
+    available = [(suffix, media_type, label) for suffix, media_type, label in (
+        (".webm", "video/webm", "WebM"), (".mp4", "video/mp4", "MP4")
+    ) if have(suffix)]
+    if not available:
+        return "", "", ""
+    sources = "".join('<source src="' + base + suffix + '" type="' + media_type + '">' for suffix, media_type, _ in available)
+    fallback_suffix, _, fallback_label = next((entry for entry in available if entry[0] == ".mp4"), available[0])
     track = '<track kind="captions" src="' + base + '.vtt" srclang="en" label="English" default>' if have(".vtt") else ""
-    links = ['<a href="' + base + '.mp4" download>Download the film</a>']
+    links = ['<a href="' + base + suffix + '" download>Download the film (' + label + ')</a>' for suffix, _, label in available]
     if have("-15s.mp4"):
         links.append('<a href="' + base + '-15s.mp4" download>15-second cut</a>')
     if have(".vtt"):
@@ -194,7 +200,7 @@ def render_film(data):
         + ">"
         + sources
         + track
-        + '<a href="' + base + '.mp4">Download the film (MP4)</a></video><figcaption>'
+        + '<a href="' + base + fallback_suffix + '">Download the film (' + fallback_label + ')</a></video><figcaption>'
         + ' <span aria-hidden="true">&middot;</span> '.join(links)
         + "</figcaption></figure>"
         + transcript
@@ -204,6 +210,7 @@ def render_film(data):
     nav = '<a href="#film">Film</a>'
     action = '<a class="text-link" href="#film">Watch the ' + str(int(f["seconds"])) + "-second film</a>"
     return section, nav, action
+
 
 
 def render_marketing(

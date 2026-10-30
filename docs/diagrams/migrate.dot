@@ -16,11 +16,16 @@ digraph migrate_doc {
   Commit [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   MarkBlocked [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   exit [shape=Msquare, style=filled, fillcolor="#ffcdd2"];
+  CheckBacklog -> exit [label="blocked"];
+  RetryGate -> exit [label="blocked"];
+  Commit -> exit [label="blocked"];
+  MarkBlocked -> exit [label="blocked"];
   start -> CheckBacklog;
   CheckBacklog -> exit [label="done"];
   CheckBacklog -> SelectStory [label="process"];
   SelectStory -> BranchSetup;
-  BranchSetup -> StudySource;
+  BranchSetup -> StudySource [label="ready"];
+  BranchSetup -> exit [label="blocked"];
   StudySource -> PlanPort;
   PlanPort -> Implement;
   Implement -> UnitValidate;
@@ -31,8 +36,8 @@ digraph migrate_doc {
   AnalyzeFailure -> RetryGate;
   RetryGate -> Implement [label="retry"];
   RetryGate -> MarkBlocked [label="giveup"];
-  Commit -> CheckBacklog [label="loop ↺", style=dashed];
-  MarkBlocked -> CheckBacklog [label="loop ↺", style=dashed];
+  Commit -> CheckBacklog [label="next"];
+  MarkBlocked -> CheckBacklog [label="next"];
   subgraph cluster_legend {
     label="legend"; fontsize=10; style=dashed; color="#90a4ae";
     l1 [shape=box, style="rounded,filled", fillcolor="#bbdefb", label="LLM agent node"];

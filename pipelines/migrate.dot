@@ -28,7 +28,7 @@
 
 digraph gm_migrate {
     graph [
-        goal="Migrate the app story-by-story, in the backlog's dependency sequence, from the source language to the target language. Behavior fidelity to the SOURCE is the goal; the story's ACCEPTANCE CRITERIA are the oracle. Study the source deeply but re-implement IDIOMATICALLY in the target — never transliterate. Gate every story on the target unit suite AND a real-terminal forge check that proves the acceptance criteria. One story per loop; one PR per story; never commit to a protected branch. Done when no 'new' rows remain.",
+        goal="Migrate the app story-by-story, in the backlog's dependency sequence, from the source language to the target language. Behavior fidelity to the SOURCE is the goal; the story's ACCEPTANCE CRITERIA are the oracle. Study the source deeply but re-implement IDIOMATICALLY in the target \u2014 never transliterate. Gate every story on the target unit suite AND a real-terminal forge check that proves the acceptance criteria. One story per loop; one PR per story; never commit to a protected branch. Done when no 'new' rows remain.",
         default_fidelity="truncate",
         default_max_retry="3"
     ]
@@ -37,51 +37,59 @@ digraph gm_migrate {
 
     // --- loop head: params present? stories left? (deterministic, fail-loud) ---
     CheckBacklog [shape=parallelogram,
-        tool_command=": \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${TARGET_PATH:?set TARGET_PATH}\" \"${TARGET_KIND:?set TARGET_KIND}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${BACKLOG:?set BACKLOG}\"; cd \"$TARGET_PATH\" && test \"$(LEDGER_FILE=$BACKLOG python3 \"$LEDGER_TOOL\" earliest)\" = NONE && printf done || printf process"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; : \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${TARGET_KIND:?set TARGET_KIND}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${BACKLOG:?set BACKLOG}\" || exit 1; next=$(LEDGER_FILE=\"$BACKLOG\" python3 \"$LEDGER_TOOL\" earliest) || exit 1; if test \"$next\" = NONE; then printf done; else printf process; fi ); then :; else printf blocked; fi"]
 
     // --- pick the NEXT story in sequence; load its story card ---
     SelectStory [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
-        prompt="In $TARGET_PATH run `LEDGER_FILE=$BACKLOG python3 \\\"$LEDGER_TOOL\\\" earliest` — it prints '<story-id> <title-slug>'. Find that story's card (its user story, acceptance criteria, source pointers, depends-on) in $TARGET_PATH/inventory/stories/*.md. Write TWO files under $TARGET_PATH/.ai/: (1) gm_current.md — the story card VERBATIM (story, Given/When/Then acceptance, source pointers); (2) gm_current.env — exactly one line `STORY=<story-id>`. Delete .ai/gm_retries if present. $goal"]
+        prompt="In $TARGET_PATH run `LEDGER_FILE=$BACKLOG python3 \\\"$LEDGER_TOOL\\\" earliest` \u2014 it prints '<story-id> <title-slug>'. Find that story's card (its user story, acceptance criteria, source pointers, depends-on) in $TARGET_PATH/inventory/stories/*.md. Write TWO files under $TARGET_PATH/.ai/: (1) gm_current.md \u2014 the story card VERBATIM (story, Given/When/Then acceptance, source pointers); (2) gm_current.env \u2014 exactly one line `STORY=<story-id>`. Delete .ai/gm_retries if present. $goal"]
 
     // --- fresh per-story branch in the target (deterministic) ---
     BranchSetup [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && set -a && . .ai/gm_current.env && set +a && rm -f .ai/gm_retries && git stash -q --include-untracked -- ':!.ai' 2>/dev/null; git checkout -q main && git pull -q --ff-only 2>/dev/null; git checkout -q -B gm/$STORY; printf ready"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; STORY=; while IFS= read -r line || test -n \"$line\"; do case \"$line\" in STORY=*) test -z \"$STORY\" || die 'duplicate STORY'; STORY=${line#STORY=};; *) die 'invalid story state';; esac; done < .ai/gm_current.env || exit 1; case \"$STORY\" in ''|*[!A-Za-z0-9._-]*) die 'invalid STORY';; esac; git check-ref-format --branch \"gm/$STORY\" >/dev/null || exit 1; export STORY; if git show-ref --verify --quiet \"refs/heads/gm/$STORY\"; then die 'run branch already exists'; fi; git stash -q --include-untracked -- ':(exclude).ai' || exit 1; git checkout -q main || exit 1; git pull -q --ff-only || exit 1; git checkout -q -b \"gm/$STORY\" || exit 1; rm -f .ai/gm_retries || exit 1 ); then printf ready; else printf blocked; fi"]
 
     // --- study how the SOURCE implements this story (deep read IS the job here) ---
     StudySource [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
-        prompt="Read $TARGET_PATH/.ai/gm_current.md. In $SOURCE_PATH, study how the source implements this story — follow its source pointers into the real code, and where UX matters boot the source app via $FORGE_TOOL to observe live behavior. Write $TARGET_PATH/.ai/gm_source.md: the behavior to preserve (states, edge cases, error paths, exact user-visible strings/layout where the acceptance depends on them), the source's data/flow structure, and which parts are language-idiom noise to DISCARD (do not carry source idioms into the target). Never edit the source. $goal"]
+        prompt="Read $TARGET_PATH/.ai/gm_current.md. In $SOURCE_PATH, study how the source implements this story \u2014 follow its source pointers into the real code, and where UX matters boot the source app via $FORGE_TOOL to observe live behavior. Write $TARGET_PATH/.ai/gm_source.md: the behavior to preserve (states, edge cases, error paths, exact user-visible strings/layout where the acceptance depends on them), the source's data/flow structure, and which parts are language-idiom noise to DISCARD (do not carry source idioms into the target). Never edit the source. $goal"]
 
     // --- design the idiomatic target implementation + author acceptance tests FIRST ---
     PlanPort [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
-        prompt="Read .ai/gm_current.md, .ai/gm_source.md, and the target repo's conventions ($TARGET_PATH AGENTS.md / architecture / migration docs if present). Design the IDIOMATIC target-language implementation: exact files, the target-native primitives to use, and how earlier migrated stories are reused (respect the backlog sequence — dependencies are already migrated). Turn EVERY Given/When/Then acceptance criterion into a concrete target-language test you will add. Write the plan to .ai/gm_plan.md. THEN author the forge probe to .ai/gm_forge_check.sh: bash using $FORGE_TOOL (env $FORGE) that boots the REAL migrated target app and asserts the acceptance criteria from screen/grep; exit 0 on success. If the target repo is new and has no CI gate yet, the plan's first item is scaffolding ./ci/gate.sh + the CI workflow (gate == CI from story #1). $goal"]
+        prompt="Read .ai/gm_current.md, .ai/gm_source.md, and the target repo's conventions ($TARGET_PATH AGENTS.md / architecture / migration docs if present). Design the IDIOMATIC target-language implementation: exact files, the target-native primitives to use, and how earlier migrated stories are reused (respect the backlog sequence \u2014 dependencies are already migrated). Turn EVERY Given/When/Then acceptance criterion into a concrete target-language test you will add. Write the plan to .ai/gm_plan.md. THEN author the forge probe to .ai/gm_forge_check.sh: bash using $FORGE_TOOL (env $FORGE) that boots the REAL migrated target app and asserts the acceptance criteria from screen/grep; exit 0 on success. If the target repo is new and has no CI gate yet, the plan's first item is scaffolding ./ci/gate.sh + the CI workflow (gate == CI from story #1). $goal"]
 
     // --- implement the vertical slice in the TARGET language ---
     Implement [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
-        prompt="Read .ai/gm_plan.md (including any appended 'Fix N' sections). Implement the VERTICAL SLICE in $TARGET_PATH on the current branch — idiomatic target-language feature code + the acceptance tests from the plan + the forge probe + CI parity, together in one pass. Preserve the behavior recorded in .ai/gm_source.md; discard source-language idioms. Never edit $SOURCE_PATH. Do NOT run the suites yourself — the next node does. Append files changed to .ai/gm_impl.log. $goal"]
+        prompt="Read .ai/gm_plan.md (including any appended 'Fix N' sections). Implement the VERTICAL SLICE in $TARGET_PATH on the current branch \u2014 idiomatic target-language feature code + the acceptance tests from the plan + the forge probe + CI parity, together in one pass. Preserve the behavior recorded in .ai/gm_source.md; discard source-language idioms. Never edit $SOURCE_PATH. Do NOT run the suites yourself \u2014 the next node does. Append files changed to .ai/gm_impl.log. $goal"]
 
     // --- deterministic gate 1: target unit suite by kind (== CI) ---
     UnitValidate [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && set -a && . .ai/gm_current.env && set +a; case \"$TARGET_KIND\" in python) uv run ruff check . && uv run ruff format --check . && uv run pyright src/ && uv run pytest -q;; rust) cargo test --quiet && cargo clippy --all-targets --quiet -- -D warnings;; new:*) ./ci/gate.sh;; *) echo \"unknown kind $TARGET_KIND\" >&2; false;; esac >/tmp/gm_gate 2>&1 && printf pass || printf fail"]
+        tool_command="( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; STORY=; while IFS= read -r line || test -n \"$line\"; do case \"$line\" in STORY=*) test -z \"$STORY\" || die 'duplicate STORY'; STORY=${line#STORY=};; *) die 'invalid story state';; esac; done < .ai/gm_current.env || exit 1; case \"$STORY\" in ''|*[!A-Za-z0-9._-]*) die 'invalid STORY';; esac; git check-ref-format --branch \"gm/$STORY\" >/dev/null || exit 1; export STORY; case \"$TARGET_KIND\" in python) uv run ruff check . && uv run ruff format --check . && uv run pyright src/ && uv run pytest -q;; rust) cargo test --quiet && cargo clippy --all-targets --quiet -- -D warnings;; new:*) ./ci/gate.sh;; *) echo \"unknown kind $TARGET_KIND\" >&2; false;; esac >/tmp/gm_gate 2>&1 ) && printf pass || printf fail"]
 
     // --- deterministic gate 2: acceptance criteria through the real terminal (forge) ---
     ForgeValidate [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && export FORGE=\"$FORGE_TOOL\" && python3 \"$FORGE\" doctor >/tmp/gm_forge_doctor 2>&1 && bash .ai/gm_forge_check.sh >/tmp/gm_forge 2>&1 && printf pass || printf fail"]
+        tool_command="( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; export FORGE=\"${FORGE_TOOL:?set FORGE_TOOL}\"; python3 \"$FORGE\" doctor >/tmp/gm_forge_doctor 2>&1 && bash .ai/gm_forge_check.sh >/tmp/gm_forge 2>&1 ) && printf pass || printf fail"]
 
     // --- diagnose a failing gate; append a concrete fix ---
     AnalyzeFailure [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
-        prompt="A validation gate failed. Read /tmp/gm_gate, /tmp/gm_forge, /tmp/gm_forge_doctor and .ai/gm_impl.log. Diagnose the root cause and append a numbered 'Fix N' section to .ai/gm_plan.md with concrete, minimal changes. If the failure reveals the ACCEPTANCE CRITERIA were wrong or untestable (an inventory defect, not a code defect), say so explicitly and write a PROPOSAL to .ai/gm_amendment_proposals/<story-id>.md — NEVER edit inventory/stories/ from this loop; only the blind verifier (pipelines/verify.dot) or a human may accept an amendment (the rubric must not be mutable by the flow it grades). Do not edit source here — Implement applies the fix. Known flake: forge screen-scrape is timing-sensitive under load; if the ONLY failure is a forge assertion, say 're-run to confirm'. $goal"]
+        prompt="A validation gate failed. Read /tmp/gm_gate, /tmp/gm_forge, /tmp/gm_forge_doctor and .ai/gm_impl.log. Diagnose the root cause and append a numbered 'Fix N' section to .ai/gm_plan.md with concrete, minimal changes. If the failure reveals the ACCEPTANCE CRITERIA were wrong or untestable (an inventory defect, not a code defect), say so explicitly and write a PROPOSAL to .ai/gm_amendment_proposals/<story-id>.md \u2014 NEVER edit inventory/stories/ from this loop; only the blind verifier (pipelines/verify.dot) or a human may accept an amendment (the rubric must not be mutable by the flow it grades). Do not edit source here \u2014 Implement applies the fix. Known flake: forge screen-scrape is timing-sensitive under load; if the ONLY failure is a forge assertion, say 're-run to confirm'. $goal"]
 
     // --- bound the fix loop at 3 (own counter; orthogonal to engine default_max_retry) ---
     RetryGate [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && n=$(cat .ai/gm_retries 2>/dev/null || echo 0); n=$((n+1)); echo $n > .ai/gm_retries; test $n -le 3 && printf retry || printf giveup"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; n=0; if test -e .ai/gm_retries; then n=$(cat .ai/gm_retries) || exit 1; fi; case \"$n\" in ''|*[!0-9]*) die 'invalid retry count';; esac; test \"$n\" -le 3 || die 'invalid retry count'; n=$((n+1)); printf '%s\\n' \"$n\" > .ai/gm_retries || exit 1; if test \"$n\" -le 3; then printf retry; else printf giveup; fi ); then :; else printf blocked; fi"]
 
     // --- converged: commit + PR, mark implemented ---
     Commit [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && set -a && . .ai/gm_current.env && set +a && git add -A -- ':!.ai' ':!*.pyc' ':!__pycache__' && git commit -q -m \"feat(gm): $STORY\" && git push -q -u origin HEAD && gh pr create --fill --base main --head gm/$STORY --label gene-migration >/tmp/gm_pr 2>&1; LEDGER_FILE=$BACKLOG python3 \"$LEDGER_TOOL\" update $STORY implemented >/dev/null && printf next"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; STORY=; while IFS= read -r line || test -n \"$line\"; do case \"$line\" in STORY=*) test -z \"$STORY\" || die 'duplicate STORY'; STORY=${line#STORY=};; *) die 'invalid story state';; esac; done < .ai/gm_current.env || exit 1; case \"$STORY\" in ''|*[!A-Za-z0-9._-]*) die 'invalid STORY';; esac; git check-ref-format --branch \"gm/$STORY\" >/dev/null || exit 1; export STORY; test \"$(git branch --show-current)\" = \"gm/$STORY\" || die 'wrong run branch'; git add -A -- ':(exclude).ai' ':(exclude)*.pyc' ':(exclude)__pycache__' || exit 1; git commit -q -m \"feat(gm): $STORY\" || exit 1; git push -q -u origin HEAD || exit 1; gh pr create --fill --base main --head \"gm/$STORY\" --label gene-migration >/tmp/gm_pr 2>&1 || exit 1; LEDGER_FILE=\"$BACKLOG\" python3 \"$LEDGER_TOOL\" update \"$STORY\" implemented >/dev/null || exit 1 ); then printf next; else printf blocked; fi"]
 
     // --- could not converge: hand back to a human, keep the sequence moving ---
     MarkBlocked [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && set -a && . .ai/gm_current.env && set +a && mkdir -p .ai/gm_blocked && cp .ai/gm_plan.md .ai/gm_blocked/$STORY.md 2>/dev/null; LEDGER_FILE=$BACKLOG python3 \"$LEDGER_TOOL\" update $STORY acknowledged >/dev/null && git checkout -q main; printf next"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; root(){ test -d \"$1\" || die 'target directory missing'; (cd -- \"$1\" && test \"$(git rev-parse --show-toplevel)\" = \"$(pwd -P)\") || die 'target must be the repository root'; }; root \"${TARGET_PATH:?set TARGET_PATH}\"; cd -- \"$TARGET_PATH\" || exit 1; STORY=; while IFS= read -r line || test -n \"$line\"; do case \"$line\" in STORY=*) test -z \"$STORY\" || die 'duplicate STORY'; STORY=${line#STORY=};; *) die 'invalid story state';; esac; done < .ai/gm_current.env || exit 1; case \"$STORY\" in ''|*[!A-Za-z0-9._-]*) die 'invalid STORY';; esac; git check-ref-format --branch \"gm/$STORY\" >/dev/null || exit 1; export STORY; mkdir -p .ai/gm_blocked || exit 1; cp .ai/gm_plan.md \".ai/gm_blocked/$STORY.md\" || exit 1; LEDGER_FILE=\"$BACKLOG\" python3 \"$LEDGER_TOOL\" update \"$STORY\" acknowledged >/dev/null || exit 1; git checkout -q main || exit 1 ); then printf next; else printf blocked; fi"]
+
+    CheckBacklog -> exit [condition="context.tool.last_line=blocked"]
+
+    RetryGate -> exit [condition="context.tool.last_line=blocked"]
+
+    Commit -> exit [condition="context.tool.last_line=blocked"]
+
+    MarkBlocked -> exit [condition="context.tool.last_line=blocked"]
 
     exit [shape=Msquare]
 
@@ -91,7 +99,8 @@ digraph gm_migrate {
     CheckBacklog -> SelectStory [condition="context.tool.last_line=process"]
 
     SelectStory -> BranchSetup
-    BranchSetup -> StudySource
+    BranchSetup -> StudySource [condition="context.tool.last_line=ready"]
+    BranchSetup -> exit [condition="context.tool.last_line=blocked"]
     StudySource -> PlanPort
     PlanPort -> Implement
     Implement -> UnitValidate
@@ -105,6 +114,6 @@ digraph gm_migrate {
     RetryGate -> Implement   [condition="context.tool.last_line=retry"]
     RetryGate -> MarkBlocked [condition="context.tool.last_line=giveup"]
 
-    Commit      -> CheckBacklog [loop_restart="true"]
-    MarkBlocked -> CheckBacklog [loop_restart="true"]
+    Commit      -> CheckBacklog [condition="context.tool.last_line=next", loop_restart="true"]
+    MarkBlocked -> CheckBacklog [condition="context.tool.last_line=next", loop_restart="true"]
 }

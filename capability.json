@@ -14,7 +14,7 @@
     },
     {
       "name": "Rebuild",
-      "when": "A story’s prerequisites and acceptance are known.",
+      "when": "A story\u2019s prerequisites and acceptance are known.",
       "output": "An idiomatic vertical slice with unit and real-surface evidence."
     },
     {
@@ -29,7 +29,7 @@
       "brief": "A fictional terminal editor is migrating languages; its save dialog preserves an unsaved buffer after a write failure.",
       "before": "Translate the save function and count a successful unit test as parity.",
       "after": "Observe the source failure state, put buffer preservation and recovery in the story, write the terminal probe first, then implement in target idioms.",
-      "why": "The observable contract includes failures, state, and recovery—not the source language’s line structure.",
+      "why": "The observable contract includes failures, state, and recovery\u2014not the source language\u2019s line structure.",
       "fictional": true
     }
   ],
@@ -107,7 +107,7 @@
         "body": "Inventory commands, screens, hidden state, errors and persistence instead of translating files line by line."
       },
       {
-        "title": "Rebuild in the target’s idioms",
+        "title": "Rebuild in the target\u2019s idioms",
         "body": "Use source-derived acceptance criteria while respecting the target language and host architecture."
       },
       {
@@ -149,12 +149,95 @@
       "Keep the complete installed folder, references and license together. Identical reinstall is safe; conflicts are refused. A deliberate --replace keeps a dated backup."
     ]
   },
-  "repository_url": "https://github.com/michaeljabbour/amplifier-skill-migrate",
+  "repository_url": "https://github.com/michaeljabbour/amplifier-capability-migrate",
+  "name": "amplifier-capability-migrate",
+  "legacy_names": [
+    "amplifier-skill-migrate",
+    "migrate"
+  ],
+  "contract_version": "amplifier-capability/v1",
+  "version": null,
+  "version_basis": "No release version recorded; installer requires a full Git revision pin.",
+  "engine": "LLM",
+  "engine_components": {
+    "caller_method": "LLM"
+  },
+  "surfaces": [
+    "agent-skills",
+    "amplifier-bundle"
+  ],
+  "portable_method": {
+    "name": "migrate",
+    "path": "skills/migrate",
+    "include": [
+      "."
+    ],
+    "contract": "Agent Skills directory; caller applies the method; no independent execution loop is installed."
+  },
+  "interfaces": {
+    "portable": {
+      "input": "Caller task and explicitly authorized context",
+      "output": "Change the language without losing the application.",
+      "failure": "Report insufficient evidence, unsupported context or host limitation; never turn discovery into an execution claim."
+    },
+    "native": {
+      "distribution": null,
+      "entrypoints": {},
+      "docs": [
+        "docs/INSTALL.md",
+        "docs/MIGRATION.md",
+        "docs/VALIDATION.md",
+        "docs/NATIVE-README.md",
+        "docs/evaluations/2026-10-28/consolidation.json"
+      ],
+      "status": "Existing declared entrypoints preserved; runtime signatures, service access and installation tests remain separate evidence."
+    },
+    "host_adapters": {
+      "amplifier_bundle": "bundle.md",
+      "grants_autonomy": false
+    }
+  },
+  "permissions": {
+    "installation": {
+      "network": false,
+      "executes_capability_code": false,
+      "writes": [
+        "Selected discovery folders",
+        ".capability-state transaction backups"
+      ],
+      "grants_runtime_permissions": false
+    },
+    "runtime": {
+      "status": "Host/caller authorizes each operation; installation is not a tool allowlist or standing approval.",
+      "declared_boundaries": [
+        "The source remains read-only. Keep data migration and rollback explicit; code parity alone cannot establish data safety.",
+        "The optional Gene-Migration graph, ledger, Forge tool, and Amplifier are not required to install this method.",
+        "A ledger fitness curve measures declared completion, not independently established behavioral parity."
+      ]
+    },
+    "secret_names": {
+      "discovery_requires": [],
+      "native_runtime_inventory": "See native documentation; no credentials are bundled or inferred."
+    }
+  },
+  "dataflow": {
+    "installation": "Read pinned tracked portable source and copy locally with SHA-256 receipts. No source text is transmitted.",
+    "method": "Caller supplies authorized context; existing promise and boundaries govern output.",
+    "native_runtime": "Provider/network/storage flows are owned by native interfaces and host authorization; these files do not enable them."
+  },
+  "source_policy": {
+    "revision": "Explicit full40-character Git commit required at installation; never infer latest.",
+    "repository_rename": "Public identity may change; skill folder, imports, entrypoints, tool IDs and schemas remain stable.",
+    "research": ".research/market remains local and ignored; AGENTS governs refresh."
+  },
   "film": {
     "file": "migrate-film",
     "seconds": 72,
     "heading": "Move the behavior, not the lines.",
-    "blurb": "In 72 seconds, Wendell the hermit crab, your app, gets copied line by line into a new shell: tests pass, then a save fails and a page of edits vanishes. Migrate starts from the app people use, every command, error and save, including how it fails. Each behavior becomes a story card with a real terminal check, built in the new language’s own style and checked by a verifier blind to the builder’s tests. Captions are on the player; a transcript is below.",
+    "blurb": "In 72 seconds, Wendell the hermit crab, your app, gets copied line by line into a new shell: tests pass, then a save fails and a page of edits vanishes. Migrate starts from the app people use, every command, error and save, including how it fails. Each behavior becomes a story card with a real terminal check, built in the new language\u2019s own style and checked by a verifier blind to the builder\u2019s tests. Captions are on the player; a transcript is below.",
     "note": "The app and its failure are a fictional example. This release proves the bookkeeping, not a finished migration. The film shows how the skill behaves; it does not report results."
-  }
+  },
+  "repository_aliases": [
+    "https://github.com/michaeljabbour/amplifier-skill-migrate"
+  ]
 }
