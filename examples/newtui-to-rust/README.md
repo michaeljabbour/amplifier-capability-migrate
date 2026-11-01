@@ -1,3 +1,5 @@
+> Local paths in this document are illustrative placeholders. Replace each with the appropriate absolute path on your machine before following an example.
+
 # Example instance — newtui (Python) → newtui-rust (Rust)
 
 The migration you are probably already doing by hand. GM formalizes it: reverse-
@@ -8,19 +10,19 @@ boot of the Rust binary. This supersedes maintaining PARITY.md/MIGRATION.md manu
 
 ## Knobs
 
-- **source:** `/Users/michaeljabbour/dev/amplifier-app-newtui` · `SOURCE_KIND=python`
+- **source:** `/absolute/path/to/source-python-repository` · `SOURCE_KIND=python`
   (read + observe only).
-- **target:** `/Users/michaeljabbour/dev/amplifier-app-newtui-rust` · `TARGET_KIND=rust`.
+- **target:** `/absolute/path/to/target-rust-repository` · `TARGET_KIND=rust`.
   Its existing PARITY.md/MIGRATION.md are the seed the inventory reconciles with.
 - **inventory home:** `<target>/inventory/` (surfaces.tsv, stories/, backlog.tsv).
 
 ## Env for a run
 
 ```sh
-export SOURCE_PATH=/Users/michaeljabbour/dev/amplifier-app-newtui   SOURCE_KIND=python
-export TARGET_PATH=/Users/michaeljabbour/dev/amplifier-app-newtui-rust TARGET_KIND=rust
-export FORGE_TOOL=/Users/michaeljabbour/.claude/skills/amplifier-skill-forge/tools/forge.py
-export LEDGER_TOOL=/Users/michaeljabbour/dev/amplifier-bundle-genemigration/pipelines/ledger.py
+export SOURCE_PATH=/absolute/path/to/source-python-repository   SOURCE_KIND=python
+export TARGET_PATH=/absolute/path/to/target-rust-repository TARGET_KIND=rust
+export FORGE_TOOL=/absolute/path/to/forge-tool
+export LEDGER_TOOL=/absolute/path/to/ledger-tool
 export SURFACES=$TARGET_PATH/inventory/surfaces.tsv
 export BACKLOG=$TARGET_PATH/inventory/backlog.tsv
 ```
