@@ -73,3 +73,7 @@ The static site includes a ZIP built from the canonical method, references and l
 ## Repository migration
 
 This repository was renamed from `amplifier-skill-migrate` to `amplifier-capability-migrate`. Existing installed method names, bundle aliases and native interfaces stay the same. See the [migration guide](https://michaeljabbour.github.io/migration/) and [repository map](https://michaeljabbour.github.io/migration/mapping.json) for source URL updates.
+
+## Optional coaching
+
+For an explicitly requested practice or review checkpoint, use [the local coaching guide](skills/migrate/references/coaching-session.v1.md). It includes a fictional first task, a baseline, a bounded budget, stop rules and human-reviewed keep/revert. No learner trace is saved by default, and software checks do not establish human learning or outside-user usefulness.

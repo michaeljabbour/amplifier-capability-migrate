@@ -32,3 +32,7 @@ After the builder's checks, derive verification from the source behavior with on
 ## Finish with evidence
 
 Return inventory coverage, story states, exact unit/real-surface commands and results, data/rollback status, independent findings, blocked stories, and known behavior differences. “Implemented,” “verified,” “acknowledged,” “cut over,” and “accepted by users” are separate states. The repository's ledger/eval self-tests validate mechanics, not a completed migration.
+
+## Optional coaching checkpoint
+
+Read [the local coaching guide](references/coaching-session.v1.md) only when the person asks for practice or optional session bookkeeping. Keep direct artifact production available; agree a small budget, preserve the baseline and stop on goal, user exit or no meaningful gain.

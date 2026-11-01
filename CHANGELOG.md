@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — optional coaching checkpoint
+
+- Add a self-contained opt-in practice/review guide with a fictional task, preserved baseline, explicit scope/budget, user stop, reviewed keep/revert and private-by-choice records. Keep native operations, existing method budgets and evidence rules unchanged; no human efficacy or outside-use result is claimed.
+
 ## 2026-10-30 — Contain benchmark fixtures and child configuration
 
 - Validate relative fixture seed/expected paths before candidate execution. Refuse traversal, absolute paths and symlink/hardlink/special-file snapshot escapes without changing the frozen answer-key cases.
