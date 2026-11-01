@@ -5,6 +5,10 @@ Modeled on the attractor `semport` fixture's ledger contract. Rows are TSV:
 
     <issue>\t<slug>\t<state>
 
+The issue key uses the pipeline's path-safe STORY identifier grammar:
+ASCII letters, digits, dot, underscore or hyphen; neither `.` nor `..` alone.
+Labels may contain ordinary spaces and Unicode, but not TSV/line delimiters.
+
 state ∈ {new, implemented, verified, acknowledged}
   new          — not yet ported
   implemented  — ported, validated (unit + forge), PR opened
@@ -28,6 +32,7 @@ Commands (stdlib only, never raises for the pipeline's tool nodes):
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -39,17 +44,35 @@ LEDGER = Path(_LEDGER_ENV) if _LEDGER_ENV else Path(__file__).with_name("ledger.
 ORDER = {"new": 0, "implemented": 1, "verified": 2, "acknowledged": 3}
 
 
+def _field(value: str, name: str) -> None:
+    if not value or value != value.strip() or any(
+        char in value for char in "\t\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029\0"
+    ):
+        raise ValueError(f"invalid {name}: expected a nonempty single TSV field")
+    if name == "key" and (value in {".", ".."} or re.fullmatch(r"[A-Za-z0-9._-]+", value) is None):
+        raise ValueError("invalid key: expected a path-safe STORY identifier (A-Z, a-z, 0-9, dot, underscore or hyphen)")
+
+
 def _rows() -> list[list[str]]:
     if not LEDGER.exists():
         return []
     out = []
-    for line in LEDGER.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
+    seen: set[str] = set()
+    for number, line in enumerate(LEDGER.read_text().splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
             continue
         parts = line.split("\t")
-        if len(parts) == 3:
-            out.append(parts)
+        if len(parts) != 3:
+            raise ValueError(f"row {number}: expected exactly three TSV fields")
+        key, label, state = parts
+        _field(key, "key")
+        _field(label, "label")
+        if state not in ORDER:
+            raise ValueError(f"row {number}: invalid state {state!r}")
+        if key in seen:
+            raise ValueError(f"row {number}: duplicate key {key!r}")
+        seen.add(key)
+        out.append(parts)
     return out
 
 
@@ -79,15 +102,26 @@ def main(argv: list[str]) -> int:
 
     if cmd == "update" and len(argv) == 3:
         issue, state = argv[1], argv[2]
-        for r in rows:
-            if r[0] == issue:
-                r[2] = state
+        if state not in ORDER:
+            print(f"invalid state: {state}", file=sys.stderr)
+            return 1
+        matching = [row for row in rows if row[0] == issue]
+        if not matching:
+            print(f"unknown ledger key: {issue}", file=sys.stderr)
+            return 1
+        if any(row[2] == "verified" and state != "verified" for row in matching):
+            print(f"verified is terminal: {issue}", file=sys.stderr)
+            return 1
+        for row in matching:
+            row[2] = state
         _write(rows)
         print(f"{issue} -> {state}")
         return 0
 
     if cmd == "add" and len(argv) == 3:
         issue, slug = argv[1], argv[2]
+        _field(issue, "key")
+        _field(slug, "label")
         if not any(r[0] == issue for r in rows):
             rows.append([issue, slug, "new"])
             _write(rows)
@@ -118,4 +152,9 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    try:
+        status = main(sys.argv[1:])
+    except (OSError, ValueError) as exc:
+        print(f"invalid ledger: {exc}", file=sys.stderr)
+        status = 1
+    raise SystemExit(status)

@@ -11,17 +11,22 @@ digraph verify_doc {
   RecordFindings [shape=box, style="rounded,filled", fillcolor="#bbdefb"];
   ReopenGate [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   exit [shape=Msquare, style=filled, fillcolor="#ffcdd2"];
+  CheckQueue -> exit [label="blocked"];
+  SelectRow -> exit [label="blocked"];
+  RunChecks -> exit [label="blocked"];
+  MarkVerified -> exit [label="blocked"];
+  ReopenGate -> exit [label="blocked"];
   start -> CheckQueue;
   CheckQueue -> exit [label="done"];
   CheckQueue -> SelectRow [label="process"];
-  SelectRow -> DeriveChecks;
+  SelectRow -> DeriveChecks [label="ready"];
   DeriveChecks -> RunChecks;
   RunChecks -> MarkVerified [label="pass"];
   RunChecks -> RecordFindings [label="fail"];
   RecordFindings -> ReopenGate;
   ReopenGate -> RunChecks [label="recheck"];
   ReopenGate -> CheckQueue [label="next"];
-  MarkVerified -> CheckQueue [label="loop ↺", style=dashed];
+  MarkVerified -> CheckQueue [label="next"];
   subgraph cluster_legend {
     label="legend"; fontsize=10; style=dashed; color="#90a4ae";
     l1 [shape=box, style="rounded,filled", fillcolor="#bbdefb", label="LLM agent node"];

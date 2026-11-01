@@ -80,8 +80,11 @@ itself authored. Loop 1 (`gm:pipelines/verify.dot` · the `gm-verifier` agent)
 independently drives them to the terminal state **`verified`**: a verifier BLIND to
 every builder artifact derives its own checks from the ground truth (the SOURCE app, knowing only the story id + title)
 and validates through a real terminal. Fail ⇒ findings in `.ai/verify_findings/`,
-row reopens ONCE (`implemented → new` — the build loop rebuilds with findings
-readable), then `acknowledged`. Verifier → builder info flow is allowed; builder →
-verifier is forbidden. Story-card amendment proposals (.ai/gm_amendment_proposals/) are accepted or rejected ONLY here or by a human.
+the ledger row reopens ONCE (`implemented → new`) with findings preserved.
+The existing `gm/<story>` branch then causes BranchSetup to stop: rebuilding needs
+human ownership/recovery confirmation. The pipeline never resets, reuses or renames
+that branch automatically. See `docs/PIPELINE_BOUNDARIES.md` for the recovery gate.
+After an authorized rebuild, another verification defect can become `acknowledged`.
+Verifier → builder info flow is allowed; builder → verifier is forbidden. Story-card amendment proposals (.ai/gm_amendment_proposals/) are accepted or rejected ONLY here or by a human.
 Run order: build loop to quiescence → verify loop to quiescence → done when every
 row is `verified` or `acknowledged`. Monitor with `evals/hillclimb.py --verifier`.

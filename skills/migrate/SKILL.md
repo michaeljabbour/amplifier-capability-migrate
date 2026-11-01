@@ -27,7 +27,7 @@ Use an isolated branch; keep protected branches and publication outside the loop
 
 ## Independently verify
 
-After the builder's checks, derive verification from the source behavior with only the story identity and intended scope—not builder claims, implementation, or builder-authored expected answers. Record the independence actually achieved. A second role using the same model is not independent human evidence. Failed verification reopens the story within a declared bound; preserve findings. If the criterion was wrong, propose and adjudicate a story amendment with evidence; never silently weaken it to pass.
+After the builder's checks, derive verification from the source behavior with only the story identity and intended scope—not builder claims, implementation, or builder-authored expected answers. Record the independence actually achieved. A second role using the same model is not independent human evidence. Failed verification reopens the ledger row within a declared bound; preserve findings. The retained native pipeline blocks on an existing `gm/<story>` branch until a human confirms ownership and recovery; it does not automatically resume, reset or rename that branch. If the criterion was wrong, propose and adjudicate a story amendment with evidence; never silently weaken it to pass.
 
 ## Finish with evidence
 

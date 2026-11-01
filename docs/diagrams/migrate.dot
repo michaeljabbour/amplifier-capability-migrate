@@ -20,6 +20,8 @@ digraph migrate_doc {
   RetryGate -> exit [label="blocked"];
   Commit -> exit [label="blocked"];
   MarkBlocked -> exit [label="blocked"];
+  UnitValidate -> exit [label="blocked"];
+  ForgeValidate -> exit [label="blocked"];
   start -> CheckBacklog;
   CheckBacklog -> exit [label="done"];
   CheckBacklog -> SelectStory [label="process"];

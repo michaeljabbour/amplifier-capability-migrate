@@ -27,6 +27,7 @@ class BranchSetupTests(unittest.TestCase):
 args=sys.argv[1:]
 with open(os.environ['GIT_TEST_LOG'],'a') as f:f.write(json.dumps({'cwd':os.getcwd(),'args':args})+'\\n')
 local=args[2:] if len(args)>2 and args[0]=='-C' else args
+if local[:1]==['--literal-pathspecs']:local=local[1:]
 op='checkout-main' if local[:3]==['checkout','-q','main'] else ('checkout-branch' if local[:3]==['checkout','-q','-b'] else (local[0] if local else ''))
 if op==os.environ.get('FAIL_GIT'):sys.exit(17)
 if op in {'pull','push'}:sys.exit(0)
@@ -36,6 +37,10 @@ sys.exit(subprocess.call([os.environ['REAL_GIT'],*args]))
         self.env = {**os.environ, 'PATH':str(bindir)+os.pathsep+os.environ['PATH'],
                     'REAL_GIT':REAL_GIT,'GIT_TEST_LOG':str(self.log),'GIT_CONFIG_NOSYSTEM':'1'}
         self.env.update({'TARGET_PATH':str(self.a),'HOST_A_PATH':str(self.a),'HOST_B_PATH':str(self.b)})
+        if MIGRATE:
+            backlog=self.base/'actual-backlog.tsv';backlog.write_text('story-1\ttitle\tnew\n')
+            shutil.copyfile(ROOT/'pipelines/git_controls.py',self.base/'git_controls.py')
+            self.env.update({'LEDGER_TOOL':str(ROOT/'pipelines/ledger.py'),'BACKLOG':str(backlog)})
         self.state = self.a / ('.ai/gm_current.env' if MIGRATE else '.ai/hgt_current.env')
         self.state.write_text('STORY=story-1\n' if MIGRATE else 'SLUG=feature-1\nTARGET=a\n')
         raw = re.search(r'BranchSetup \[shape=parallelogram,\s*tool_command=("(?:\\.|[^"\\])*")',GRAPH.read_text()).group(1)
@@ -54,7 +59,12 @@ sys.exit(subprocess.call([os.environ['REAL_GIT'],*args]))
 
     def mutations(self):
         records=[json.loads(x) for x in self.log.read_text().splitlines()] if self.log.exists() else []
-        return [x for x in records if x['args'][0] in {'stash','checkout','pull','reset'}]
+        out=[]
+        for record in records:
+            args=record['args'][1:] if record['args'][:1]==['--literal-pathspecs'] else record['args']
+            if args and args[0] in {'stash','checkout','pull','reset'}:
+                out.append({**record,'raw_args':record['args'],'args':args})
+        return out
 
     def blocked(self):
         result=self.run_setup()
@@ -127,7 +137,7 @@ sys.exit(subprocess.call([os.environ['REAL_GIT'],*args]))
     def test_all_guarded_nodes_refuse_wrong_cwd(self):
         self.env['TARGET_PATH' if MIGRATE else 'HOST_A_PATH']=str(self.base/'missing')
         check='CheckBacklog' if MIGRATE else 'CheckLedger'
-        for node,token in [(check,'blocked'),('UnitValidate','fail'),('ForgeValidate','fail'),('RetryGate','blocked'),('Commit','blocked'),('MarkBlocked','blocked')]:
+        for node,token in [(check,'blocked'),('UnitValidate','blocked' if MIGRATE else 'fail'),('ForgeValidate','blocked' if MIGRATE else 'fail'),('RetryGate','blocked'),('Commit','blocked'),('MarkBlocked','blocked')]:
             with self.subTest(node=node):
                 result=subprocess.run(['bash','-c',self.node_command(node)],cwd=self.base,env=self.env,text=True,capture_output=True)
                 self.assertEqual(result.returncode,0,result.stderr);self.assertEqual(result.stdout,token)
@@ -149,7 +159,8 @@ sys.exit(subprocess.call([os.environ['REAL_GIT'],*args]))
         self.assertEqual(self.run_setup().stdout,'ready')
         marker=self.base/'ledger-called'
         ledger=self.base/'ledger.py';ledger.write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("called")\n')
-        self.env.update({'LEDGER_TOOL':str(ledger),'BACKLOG':'fictional','FAIL_GIT':'push'})
+        backlog=self.base/'backlog.tsv';backlog.write_text('')
+        self.env.update({'LEDGER_TOOL':str(ledger),'BACKLOG':str(backlog),'FAIL_GIT':'push'})
         if not MIGRATE:
             (self.a/'pipelines').mkdir();(self.a/'pipelines/ledger.py').write_text(ledger.read_text())
         (self.a/'f').write_text('new feature')
@@ -164,7 +175,8 @@ sys.exit(subprocess.call([os.environ['REAL_GIT'],*args]))
         self.assertEqual(self.run_setup().stdout,'ready')
         marker=self.base/'ledger-called';ledger=self.base/'ledger.py'
         ledger.write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("called")\n')
-        self.env.update({'LEDGER_TOOL':str(ledger),'BACKLOG':'fictional'})
+        backlog=self.base/'backlog.tsv';backlog.write_text('')
+        self.env.update({'LEDGER_TOOL':str(ledger),'BACKLOG':str(backlog)})
         if not MIGRATE:
             (self.a/'pipelines').mkdir();(self.a/'pipelines/ledger.py').write_text(ledger.read_text())
         gh=self.base/'bin/gh';gh.write_text('#!/bin/sh\nexit 0\n');gh.chmod(0o755)

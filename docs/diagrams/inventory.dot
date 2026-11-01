@@ -3,17 +3,24 @@ digraph inventory_doc {
   label="inventory.dot — documentation view (derived; the executable graph is pipelines/inventory.dot)";
   node [fontname="Helvetica", fontsize=11]; edge [fontname="Helvetica", fontsize=10, color="#546e7a"];
   start [shape=Mdiamond, style=filled, fillcolor="#c8e6c9"];
+  Preflight [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   EnumerateSurfaces [shape=box, style="rounded,filled", fillcolor="#bbdefb"];
   CheckSurfaces [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   SelectSurface [shape=box, style="rounded,filled", fillcolor="#bbdefb"];
   DeriveStories [shape=box, style="rounded,filled", fillcolor="#bbdefb"];
   SequenceBacklog [shape=box, style="rounded,filled", fillcolor="#bbdefb"];
+  ValidateSurface [shape=parallelogram, style=filled, fillcolor="#fff9c4"];
   exit [shape=Msquare, style=filled, fillcolor="#ffcdd2"];
-  start -> EnumerateSurfaces;
+  start -> Preflight;
+  Preflight -> EnumerateSurfaces [label="ready"];
+  Preflight -> exit [label="blocked"];
+  CheckSurfaces -> exit [label="blocked"];
   EnumerateSurfaces -> CheckSurfaces;
   CheckSurfaces -> SequenceBacklog [label="done"];
   CheckSurfaces -> SelectSurface [label="process"];
-  SelectSurface -> DeriveStories;
+  SelectSurface -> ValidateSurface;
+  ValidateSurface -> DeriveStories [label="ready"];
+  ValidateSurface -> exit [label="blocked"];
   DeriveStories -> CheckSurfaces [label="loop ↺", style=dashed];
   SequenceBacklog -> exit;
   subgraph cluster_legend {

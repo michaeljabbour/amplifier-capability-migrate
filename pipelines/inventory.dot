@@ -30,13 +30,16 @@ digraph gm_inventory {
 
     start [shape=Mdiamond]
 
+    Preflight [shape=parallelogram,
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; safe_dir(){ test ! -L \"$1\" || die 'symlinked metadata directory'; if test -e \"$1\"; then test -d \"$1\" || die 'metadata directory is not a directory'; fi; }; safe_file(){ test ! -L \"$1\" || die 'symlinked metadata file'; if test -e \"$1\"; then test -f \"$1\" || die 'metadata file is not regular'; fi; }; test -d \"${TARGET_PATH:?set TARGET_PATH}\" || die 'target directory missing'; cd -- \"$TARGET_PATH\" || exit 1; safe_dir .ai; safe_file .ai/gm_surface.env; safe_dir inventory; safe_dir inventory/stories; safe_file inventory/README.md; : \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${SURFACES:?set SURFACES}\" \"${BACKLOG:?set BACKLOG}\" || exit 1; safe_file \"$SURFACES\"; safe_file \"$BACKLOG\"; for file in inventory/stories/*.md; do safe_file \"$file\"; done; mkdir -p .ai inventory/stories || exit 1; printf ready ); then :; else printf blocked; fi"]
+
     // --- enumerate the source app's user-facing surfaces (runs once) ---
     EnumerateSurfaces [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
         prompt=": \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${TARGET_PATH:?set TARGET_PATH}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${SURFACES:?set SURFACES}\"; Study $SOURCE_PATH (README, entry points, commands, screens, config) and BOOT it via $FORGE_TOOL to see its real user-facing surfaces. Enumerate the SURFACES — screens, commands, major flows/features a user interacts with. For each, run `LEDGER_FILE=$SURFACES python3 \\\"$LEDGER_TOOL\\\" add <surface-id> <short-name>` (idempotent). mkdir -p $TARGET_PATH/inventory/stories. Do NOT edit the source. $goal"]
 
     // --- loop head: surfaces left to mine? (deterministic) ---
     CheckSurfaces [shape=parallelogram,
-        tool_command="cd \"$TARGET_PATH\" && test \"$(LEDGER_FILE=$SURFACES python3 \"$LEDGER_TOOL\" earliest)\" = NONE && printf done || printf process"]
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; safe_dir(){ test ! -L \"$1\" || die 'symlinked metadata directory'; if test -e \"$1\"; then test -d \"$1\" || die 'metadata directory is not a directory'; fi; }; safe_file(){ test ! -L \"$1\" || die 'symlinked metadata file'; if test -e \"$1\"; then test -f \"$1\" || die 'metadata file is not regular'; fi; }; test -d \"${TARGET_PATH:?set TARGET_PATH}\" || die 'target directory missing'; cd -- \"$TARGET_PATH\" || exit 1; safe_dir .ai; safe_file .ai/gm_surface.env; safe_dir inventory; safe_dir inventory/stories; safe_file inventory/README.md; : \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${SURFACES:?set SURFACES}\" \"${BACKLOG:?set BACKLOG}\" || exit 1; safe_file \"$SURFACES\"; safe_file \"$BACKLOG\"; for file in inventory/stories/*.md; do safe_file \"$file\"; done; mkdir -p .ai inventory/stories || exit 1; test -f \"$SURFACES\" && test -r \"$SURFACES\" || die 'missing or unreadable surfaces'; next=$(LEDGER_FILE=\"$SURFACES\" python3 \"$LEDGER_TOOL\" earliest) || exit 1; if test \"$next\" = NONE; then printf done; else SURFACE=${next%% *}; case \"$SURFACE\" in ''|.|..|*[!A-Za-z0-9._-]*) die 'invalid SURFACE';; esac; safe_file \"inventory/stories/$SURFACE.md\"; printf process; fi ); then :; else printf blocked; fi"]
 
     // --- pick the next surface ---
     SelectSurface [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
@@ -50,13 +53,21 @@ digraph gm_inventory {
     SequenceBacklog [shape=box, llm_provider="anthropic", llm_model="claude-opus-4-8",
         prompt="Read every $TARGET_PATH/inventory/stories/*.md. Produce the MIGRATION SEQUENCE: order ALL stories by dependency so foundational stories (data model, core session/loop, shared primitives, protocol) precede the features that consume them, using each story's DEPENDS-ON notes. Write the ordered backlog by appending rows IN SEQUENCE: for each story run `LEDGER_FILE=$BACKLOG python3 \\\"$LEDGER_TOOL\\\" add <story-id> <title-slug>` (file order = sequence; the migration takes them earliest-first). Verify each acceptance criterion is concrete and testable; fix any that are vague. Write $TARGET_PATH/inventory/README.md summarizing the plan (surfaces, story count, the sequence rationale). $goal"]
 
+    ValidateSurface [shape=parallelogram,
+        tool_command="if ( die(){ printf '%s\\n' \"$*\" >&2; exit 1; }; safe_dir(){ test ! -L \"$1\" || die 'symlinked metadata directory'; if test -e \"$1\"; then test -d \"$1\" || die 'metadata directory is not a directory'; fi; }; safe_file(){ test ! -L \"$1\" || die 'symlinked metadata file'; if test -e \"$1\"; then test -f \"$1\" || die 'metadata file is not regular'; fi; }; test -d \"${TARGET_PATH:?set TARGET_PATH}\" || die 'target directory missing'; cd -- \"$TARGET_PATH\" || exit 1; safe_dir .ai; safe_file .ai/gm_surface.env; safe_dir inventory; safe_dir inventory/stories; safe_file inventory/README.md; : \"${SOURCE_PATH:?set SOURCE_PATH}\" \"${FORGE_TOOL:?set FORGE_TOOL}\" \"${LEDGER_TOOL:?set LEDGER_TOOL}\" \"${SURFACES:?set SURFACES}\" \"${BACKLOG:?set BACKLOG}\" || exit 1; safe_file \"$SURFACES\"; safe_file \"$BACKLOG\"; for file in inventory/stories/*.md; do safe_file \"$file\"; done; mkdir -p .ai inventory/stories || exit 1; SURFACE=; while IFS= read -r line || test -n \"$line\"; do case \"$line\" in SURFACE=*) test -z \"$SURFACE\" || die 'duplicate SURFACE'; SURFACE=${line#SURFACE=}; test -n \"$SURFACE\" || die 'empty SURFACE';; *) die 'invalid surface state';; esac; done < .ai/gm_surface.env || exit 1; case \"$SURFACE\" in ''|.|..|*[!A-Za-z0-9._-]*) die 'invalid SURFACE';; esac; safe_file \"inventory/stories/$SURFACE.md\"; printf ready ); then :; else printf blocked; fi"]
+
     exit [shape=Msquare]
 
-    start -> EnumerateSurfaces
+    start -> Preflight
+    Preflight -> EnumerateSurfaces [condition="context.tool.last_line=ready"]
+    Preflight -> exit [condition="context.tool.last_line=blocked"]
+    CheckSurfaces -> exit [condition="context.tool.last_line=blocked"]
     EnumerateSurfaces -> CheckSurfaces
     CheckSurfaces -> SequenceBacklog [condition="context.tool.last_line=done"]
     CheckSurfaces -> SelectSurface   [condition="context.tool.last_line=process"]
-    SelectSurface -> DeriveStories
+    SelectSurface -> ValidateSurface
+    ValidateSurface -> DeriveStories [condition="context.tool.last_line=ready"]
+    ValidateSurface -> exit [condition="context.tool.last_line=blocked"]
     DeriveStories -> CheckSurfaces   [loop_restart="true"]
     SequenceBacklog -> exit
 }
